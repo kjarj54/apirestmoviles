@@ -9,55 +9,97 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/usuarios")
+@RequestMapping("/user")
 @CrossOrigin(origins = "*")
 public class UsuarioController {
 
     @Autowired
-    UsuarioService usuarioService;
+    private UsuarioService usuarioService;
 
     @Autowired
     private IConvierteDatos convierteDatos;
 
-
     @Operation(summary = "Create a new user")
     @PostMapping
-    public ResponseEntity<UsuarioDto> createUsuario(@RequestBody String usuarioJson) {
-        UsuarioDto usuarioDto = convierteDatos.obtenerDatos(usuarioJson, UsuarioDto.class);
-        UsuarioDto createdUsuario = usuarioService.createUsuario(usuarioDto);
-        return new ResponseEntity<>(createdUsuario, HttpStatus.CREATED);
+    public ResponseEntity<?> createUsuario(@RequestBody String usuarioJson) {
+        try {
+            UsuarioDto usuarioDto = convierteDatos.obtenerDatos(usuarioJson, UsuarioDto.class);
+            UsuarioDto createdUsuario = usuarioService.createUsuario(usuarioDto);
+            return new ResponseEntity<>(createdUsuario, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return errorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Operation(summary = "Get all users")
     @GetMapping
-    public ResponseEntity<List<UsuarioDto>> getAllUsuarios() {
-        List<UsuarioDto> usuarios = usuarioService.getAllUsuarios();
-        return ResponseEntity.ok(usuarios);
+    public ResponseEntity<?> getAllUsuarios() {
+        try {
+            List<UsuarioDto> usuarios = usuarioService.getAllUsuarios();
+            return ResponseEntity.ok(usuarios);
+        } catch (Exception e) {
+            return errorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Operation(summary = "Get user by ID")
     @GetMapping("/{id}")
-    public ResponseEntity<UsuarioDto> getUsuarioById(@PathVariable Long id) {
-        UsuarioDto usuario = usuarioService.getUsuarioById(id);
-        return ResponseEntity.ok(usuario);
+    public ResponseEntity<?> getUsuarioById(@PathVariable Long id) {
+        try {
+            UsuarioDto usuario = usuarioService.getUsuarioById(id);
+            return ResponseEntity.ok(usuario);
+        } catch (IllegalArgumentException e) {
+            return errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return errorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Operation(summary = "Update user")
     @PutMapping("/{id}")
-    public ResponseEntity<UsuarioDto> updateUsuario(@PathVariable Long id, @RequestBody String usuarioJson) {
-        UsuarioDto usuarioDto = convierteDatos.obtenerDatos(usuarioJson, UsuarioDto.class);
-        UsuarioDto updatedUsuario = usuarioService.updateUsuario(id, usuarioDto);
-        return ResponseEntity.ok(updatedUsuario);
+    public ResponseEntity<?> updateUsuario(@PathVariable Long id, @RequestBody String usuarioJson) {
+        try {
+            UsuarioDto usuarioDto = convierteDatos.obtenerDatos(usuarioJson, UsuarioDto.class);
+            UsuarioDto updatedUsuario = usuarioService.updateUsuario(id, usuarioDto);
+            return ResponseEntity.ok(updatedUsuario);
+        } catch (IllegalArgumentException e) {
+            return errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return errorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Operation(summary = "Delete user")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUsuario(@PathVariable Long id) {
-        // Add delete method in UsuarioService first
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteUsuario(@PathVariable Long id) {
+        try {
+            usuarioService.deleteUsuario(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return errorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Operation(summary = "Get user by email")
+    @GetMapping("/findByCorreo/{correo}")
+    public ResponseEntity<?> getUsuarioByCorreo(@PathVariable String correo) {
+        try {
+            UsuarioDto usuario = usuarioService.getUsuarioByCorreo(correo);
+            return ResponseEntity.ok(usuario);
+        } catch (IllegalArgumentException e) {
+            return errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return errorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Operation(summary = "Returns a greeting message")
@@ -66,4 +108,9 @@ public class UsuarioController {
         return "Hello, Spring Boot!";
     }
 
+    private ResponseEntity<Map<String, String>> errorResponse(String message, HttpStatus status) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", message);
+        return ResponseEntity.status(status).body(response);
+    }
 }

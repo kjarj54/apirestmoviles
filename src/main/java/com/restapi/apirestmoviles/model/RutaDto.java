@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 
 public record RutaDto(Long id,
                       Long usuarioId,
-                      String nombreUsuario,
                       String origen,
                       String destino,
                       BigDecimal distanciaKm,

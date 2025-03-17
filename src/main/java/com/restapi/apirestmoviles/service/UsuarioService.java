@@ -41,14 +41,13 @@ public class UsuarioService {
         usuario.setNombre(usuarioDto.nombre());
         usuario.setCorreo(usuarioDto.correo());
         usuario.setContrasena(passwordEncoder.encode(usuarioDto.contrasena()));
-        // Note: vehiculo should be set separately
         return usuario;
     }
 
     // Updated service methods using conversion
     public UsuarioDto createUsuario(UsuarioDto usuarioDto) {
         if (usuarioRepository.existsByCorreo(usuarioDto.correo())) {
-            throw new RuntimeException("El correo ya está registrado");
+            throw new IllegalArgumentException("Email is already registered");
         }
         Usuario usuario = convertToEntity(usuarioDto);
         Usuario savedUsuario = usuarioRepository.save(usuario);
@@ -62,18 +61,18 @@ public class UsuarioService {
 
     public UsuarioDto getUsuarioById(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
         return convertToDto(usuario);
     }
 
     public UsuarioDto updateUsuario(Long id, UsuarioDto usuarioDto) {
         Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
 
         usuario.setNombre(usuarioDto.nombre());
         if (!usuario.getCorreo().equals(usuarioDto.correo()) &&
                 usuarioRepository.existsByCorreo(usuarioDto.correo())) {
-            throw new RuntimeException("El correo ya está registrado");
+            throw new IllegalArgumentException("Email is already registered");
         }
         usuario.setCorreo(usuarioDto.correo());
 
@@ -85,4 +84,16 @@ public class UsuarioService {
         return convertToDto(updatedUsuario);
     }
 
+    public void deleteUsuario(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
+
+        usuarioRepository.delete(usuario);
+    }
+
+    public UsuarioDto getUsuarioByCorreo(String correo) {
+        Usuario usuario = usuarioRepository.findByCorreo(correo)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + correo));
+        return convertToDto(usuario);
+    }
 }
