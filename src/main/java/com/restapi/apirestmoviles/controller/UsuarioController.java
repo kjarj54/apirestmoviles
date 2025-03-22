@@ -3,15 +3,23 @@ package com.restapi.apirestmoviles.controller;
 import com.restapi.apirestmoviles.model.UsuarioDto;
 import com.restapi.apirestmoviles.service.UsuarioService;
 import com.restapi.apirestmoviles.util.IConvierteDatos;
+import com.restapi.apirestmoviles.util.JwtUtil;
+
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/user")
@@ -23,6 +31,12 @@ public class UsuarioController {
 
     @Autowired
     private IConvierteDatos convierteDatos;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @Operation(summary = "Create a new user")
     @PostMapping
@@ -112,5 +126,47 @@ public class UsuarioController {
         Map<String, String> response = new HashMap<>();
         response.put("error", message);
         return ResponseEntity.status(status).body(response);
+    }
+
+    @Operation(summary = "Login user", security = @SecurityRequirement(name = "bearer-jwt"))
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody String loginJson) {
+        try {
+            UsuarioDto credentials = convierteDatos.obtenerDatos(loginJson, UsuarioDto.class);
+
+            // Validate input
+            if (credentials.correo() == null || credentials.contrasena() == null) {
+                return errorResponse("Email and password are required", HttpStatus.BAD_REQUEST);
+            }
+
+            try {
+                // Get user by email
+                UsuarioDto usuario = usuarioService.getUsuarioByCorreo(credentials.correo());
+                Boolean encodedPassword = passwordEncoder.matches(credentials.contrasena(), usuario.contrasena());
+                // Verify user exists and password matches
+                if (usuario != null && encodedPassword) {
+                    // Generate JWT token
+                    String token = jwtUtil.generateToken(credentials.correo());
+
+                    // Create response with user info and token
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("id", usuario.id());
+                    response.put("correo", usuario.correo());
+                    response.put("nombre", usuario.nombre());
+                    response.put("token", token);
+
+                    return ResponseEntity.ok(response);
+                }
+            } catch (Exception e) {
+                // Log the error but don't expose details to client
+                System.err.println("Authentication error: " + e.getMessage());
+            }
+
+            // Always return the same generic error for invalid credentials
+            return errorResponse("Invalid credentials", HttpStatus.UNAUTHORIZED);
+        } catch (Exception e) {
+            Logger.getLogger(UsuarioController.class.getName()).log(Level.SEVERE, "Authentication error", e);
+            return errorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Service
@@ -18,12 +19,14 @@ public class UsuarioService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    private static final Logger LOG = Logger.getLogger(UsuarioService.class.getName());
+
     private UsuarioDto convertToDto(Usuario usuario) {
         return new UsuarioDto(
                 usuario.getId(),
                 usuario.getNombre(),
                 usuario.getCorreo(),
-                null, // We don't send back the password
+                usuario.getContrasena(),
                 usuario.getVehiculo() != null ? usuario.getVehiculo().getId() : null
         );
     }
