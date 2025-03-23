@@ -7,6 +7,7 @@ import com.restapi.apirestmoviles.repository.OTPRepository;
 import com.restapi.apirestmoviles.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -21,19 +22,19 @@ public class OTPService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-//     Metodo para generar código OTP aleatorio
+    @Autowired
+    private EmailService emailService;
+
     private String generateOTPCode() {
         Random random = new Random();
         int otpCode = 100000 + random.nextInt(900000); // Código de 6 dígitos
         return String.valueOf(otpCode);
     }
 
-    // Convertir de Entidad a DTO
     private OTPDto convertToDto(OTP otp) {
         return new OTPDto(otp.getId(), otp.getUsuario().getId(), otp.getCodigo(), otp.getFechaExpiracion());
     }
 
-    // Convertir de DTO a Entidad
     private OTP convertToEntity(OTPDto otpDto, Usuario usuario) {
         OTP otp = new OTP();
         otp.setUsuario(usuario);
@@ -42,28 +43,34 @@ public class OTPService {
         return otp;
     }
 
+    @Transactional
     public OTPDto generateOTP(Long usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + usuarioId));
 
-        // Borrar OTPs previos antes de generar uno nuevo
         otpRepository.deleteByUsuarioId(usuarioId);
 
-        // Crear y guardar el nuevo OTP
+        String otpCode = generateOTPCode();
+
         OTP otp = new OTP();
         otp.setUsuario(usuario);
-        otp.setCodigo(generateOTPCode());
-        otp.setFechaExpiracion(LocalDateTime.now().plusMinutes(5)); // Expira en 5 minutos
+        otp.setCodigo(otpCode);
+        otp.setFechaExpiracion(LocalDateTime.now().plusMinutes(10));
 
         OTP savedOtp = otpRepository.save(otp);
+
+        emailService.sendOtpEmail(usuario.getCorreo(), otpCode);
+
         return convertToDto(savedOtp);
     }
 
+    @Transactional
     public boolean verifyOTP(Long usuarioId, String codigo) {
-        Optional<OTP> otpOptional = otpRepository.findByUsuarioIdAndCodigoAndFechaExpiracionAfter(usuarioId, codigo, LocalDateTime.now());
+        Optional<OTP> otpOptional = otpRepository.findByUsuarioIdAndCodigoAndFechaExpiracionAfter(usuarioId, codigo,
+                LocalDateTime.now());
 
         if (otpOptional.isPresent()) {
-            otpRepository.deleteByUsuarioId(usuarioId); // Eliminar OTP después de su uso
+            otpRepository.deleteByUsuarioId(usuarioId);
             return true;
         } else {
             return false;
