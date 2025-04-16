@@ -63,4 +63,12 @@ jobs:
           app-name: 'greendrive-api'
           slot-name: 'Production'
           package: '*.jar'
+          app-settings: |
+            DB_HOST=${{ secrets.DB_HOST }}
+            DB_NAME=${{ secrets.DB_NAME }}
+            DB_USER=${{ secrets.DB_USER }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            JWT_EXPIRATION=${{ secrets.JWT_EXPIRATION }}
+            GM_PASSWORD=${{ secrets.GM_PASSWORD }}
           
