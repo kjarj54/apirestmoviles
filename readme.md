@@ -59,7 +59,7 @@ JWT_EXPIRATION=3600000
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/ev-charging-api.git
+git clone https://github.com/kjarj54/apirestmoviles.git
 ```
 
 2. Set up environment variables
