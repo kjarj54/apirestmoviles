@@ -138,9 +138,6 @@
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                         </exclude>
-                        <jvmArguments>
-                            -Dserver.port=${PORT:8080}
-                        </jvmArguments>
                     </excludes>
                 </configuration>
             </plugin>
