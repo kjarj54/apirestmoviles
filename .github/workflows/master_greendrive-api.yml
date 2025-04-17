@@ -64,41 +64,11 @@ jobs:
           slot-name: 'Production'
           package: '*.jar'
           app-settings: |
-            [
-              {
-                "name": "DB_HOST",
-                "value": "${{ secrets.DB_HOST }}",
-                "slotSetting": true
-              },
-              {
-                "name": "DB_NAME",
-                "value": "${{ secrets.DB_NAME }}",
-                "slotSetting": true
-              },
-              {
-                "name": "DB_USER",
-                "value": "${{ secrets.DB_USER }}",
-                "slotSetting": true
-              },
-              {
-                "name": "DB_PASSWORD",
-                "value": "${{ secrets.DB_PASSWORD }}",
-                "slotSetting": true
-              },
-              {
-                "name": "JWT_SECRET",
-                "value": "${{ secrets.JWT_SECRET }}",
-                "slotSetting": true
-              },
-              {
-                "name": "JWT_EXPIRATION",
-                "value": "${{ secrets.JWT_EXPIRATION }}",
-                "slotSetting": true
-              },
-              {
-                "name": "GM_PASSWORD",
-                "value": "${{ secrets.GM_PASSWORD }}",
-                "slotSetting": true
-              }
-            ]
+            DB_HOST=${{ secrets.DB_HOST }}
+            DB_NAME=${{ secrets.DB_NAME }}
+            DB_USER=${{ secrets.DB_USER }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            JWT_EXPIRATION=${{ secrets.JWT_EXPIRATION }}
+            GM_PASSWORD=${{ secrets.GM_PASSWORD }}
           
