@@ -1,5 +1,6 @@
 package com.restapi.apirestmoviles.service;
 
+import com.restapi.apirestmoviles.model.CatalogoVehiculo;
 import com.restapi.apirestmoviles.model.Usuario;
 import com.restapi.apirestmoviles.model.UsuarioDto;
 import com.restapi.apirestmoviles.repository.UsuarioRepository;
@@ -19,6 +20,9 @@ public class UsuarioService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private CatalogoVehiculoService catalogoVehiculoService;
+
     private static final Logger LOG = Logger.getLogger(UsuarioService.class.getName());
 
     private UsuarioDto convertToDto(Usuario usuario) {
@@ -27,8 +31,7 @@ public class UsuarioService {
                 usuario.getNombre(),
                 usuario.getCorreo(),
                 usuario.getContrasena(),
-                usuario.getVehiculo() != null ? usuario.getVehiculo().getId() : null
-        );
+                usuario.getVehiculo() != null ? usuario.getVehiculo().getId() : null);
     }
 
     // Convert List of Usuario to List of UsuarioDto
@@ -85,6 +88,17 @@ public class UsuarioService {
 
         Usuario updatedUsuario = usuarioRepository.save(usuario);
         return convertToDto(updatedUsuario);
+    }
+
+    public UsuarioDto assignVehicle(Long userId, Long vehicleId) {
+        Usuario usuario = usuarioRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+
+        CatalogoVehiculo vehiculo = catalogoVehiculoService.getById(vehicleId);
+        usuario.setVehiculo(vehiculo);
+
+        Usuario updated = usuarioRepository.save(usuario);
+        return convertToDto(updated);
     }
 
     public void deleteUsuario(Long id) {

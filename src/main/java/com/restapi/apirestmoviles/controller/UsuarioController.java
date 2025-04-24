@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -87,6 +86,19 @@ public class UsuarioController {
             UsuarioDto usuarioDto = convierteDatos.obtenerDatos(usuarioJson, UsuarioDto.class);
             UsuarioDto updatedUsuario = usuarioService.updateUsuario(id, usuarioDto);
             return ResponseEntity.ok(updatedUsuario);
+        } catch (IllegalArgumentException e) {
+            return errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return errorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Operation(summary = "Assign or update a vehicle for a user", security = @SecurityRequirement(name = "bearer-jwt"))
+    @PutMapping("/{id}/assign-vehicle/{vehicleId}")
+    public ResponseEntity<?> assignVehicleToUser(@PathVariable Long id, @PathVariable Long vehicleId) {
+        try {
+            UsuarioDto updated = usuarioService.assignVehicle(id, vehicleId);
+            return ResponseEntity.ok(updated);
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {

@@ -21,8 +21,7 @@ public class CatalogoVehiculoService {
                 vehicle.getId(),
                 vehicle.getMarca(),
                 vehicle.getModelo(),
-                vehicle.getAutonomia()
-        );
+                vehicle.getAutonomia());
     }
 
     // Convert DTO to entity
@@ -52,9 +51,15 @@ public class CatalogoVehiculoService {
         return convertToDto(vehicle);
     }
 
+    public CatalogoVehiculo getById(Long id) {
+        return catalogoVehiculoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found with id: " + id));
+    }
+
     public CatalogoVehiculoDto createVehicle(CatalogoVehiculoDto vehicleDto) {
         if (catalogoVehiculoRepository.existsByMarcaAndModelo(vehicleDto.marca(), vehicleDto.modelo())) {
-            throw new IllegalArgumentException("Vehicle with brand " + vehicleDto.marca() + " and model " + vehicleDto.modelo() + " already exists.");
+            throw new IllegalArgumentException("Vehicle with brand " + vehicleDto.marca() + " and model "
+                    + vehicleDto.modelo() + " already exists.");
         }
         CatalogoVehiculo vehicle = convertToEntity(vehicleDto);
         CatalogoVehiculo savedVehicle = catalogoVehiculoRepository.save(vehicle);
