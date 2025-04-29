@@ -1,0 +1,10 @@
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+numReplicas = 1
+startCommand = "java -jar target/*.jar"
+restartPolicyType = "ON_FAILURE"
+
+[deploy.env]
+JAVA_VERSION = "21"
