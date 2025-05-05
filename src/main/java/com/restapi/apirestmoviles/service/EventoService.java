@@ -8,6 +8,7 @@ import com.restapi.apirestmoviles.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,15 +30,13 @@ public class EventoService {
                 evento.getDescripcion(),
                 evento.getFechaEvento(),
                 evento.getUbicacion(),
-                evento.getEstado(),
-                evento.getFechaCreacion()
-        );
+                evento.getEstado());
     }
 
-    // Convert DTO to entity
     private Evento convertToEntity(EventoDto eventoDto) {
         Usuario organizador = usuarioRepository.findById(eventoDto.usuarioCreadorId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + eventoDto.usuarioCreadorId()));
+                .orElseThrow(
+                        () -> new IllegalArgumentException("User not found with id: " + eventoDto.usuarioCreadorId()));
 
         Evento evento = new Evento();
         evento.setUsuarioCreador(organizador);
@@ -46,7 +45,6 @@ public class EventoService {
         evento.setFechaEvento(eventoDto.fechaEvento());
         evento.setUbicacion(eventoDto.ubicacion());
         evento.setEstado(eventoDto.estado());
-        evento.setFechaCreacion(eventoDto.fechaCreacion());
 
         return evento;
     }
@@ -55,6 +53,26 @@ public class EventoService {
         Evento evento = convertToEntity(eventoDto);
         Evento savedEvent = eventoRepository.save(evento);
         return convertToDto(savedEvent);
+    }
+
+    public void updatedEvent(Long id, String newStatus) {
+        Evento evento = eventoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Event not found with id: " + id));
+
+        evento.setEstado(newStatus);
+        eventoRepository.save(evento);
+    }
+
+    public EventoDto editEvent(Long id, EventoDto updatedData) {
+        Evento evento = eventoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Event not found with id: " + id));
+
+        evento.setTitulo(updatedData.titulo());
+        evento.setDescripcion(updatedData.descripcion());
+        evento.setUbicacion(updatedData.ubicacion());
+        evento.setFechaEvento(updatedData.fechaEvento());
+
+        return convertToDto(eventoRepository.save(evento));
     }
 
     public List<EventoDto> getAllEvents() {

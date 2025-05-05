@@ -2,7 +2,6 @@ package com.restapi.apirestmoviles.controller;
 
 import com.restapi.apirestmoviles.model.EventoDto;
 import com.restapi.apirestmoviles.service.EventoService;
-import com.restapi.apirestmoviles.util.IConvierteDatos;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,20 +20,42 @@ public class EventoController {
     @Autowired
     private EventoService eventoService;
 
-    @Autowired
-    private IConvierteDatos convierteDatos;
-
     @Operation(summary = "Create a new event")
     @PostMapping
-    public ResponseEntity<?> createEvent(@RequestBody String eventJson) {
+    public ResponseEntity<?> createEvent(@RequestBody EventoDto eventDto) {
         try {
-            EventoDto eventDto = convierteDatos.obtenerDatos(eventJson, EventoDto.class);
             EventoDto createdEvent = eventoService.createEvent(eventDto);
             return new ResponseEntity<>(createdEvent, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
+            System.err.println("Error creating event: " + e.getMessage());
+            e.printStackTrace();
             return errorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<?> updateEventStatus(@PathVariable Long id, @RequestParam String newStatus) {
+        try {
+            eventoService.updatedEvent(id, newStatus);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return errorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateEvent(@PathVariable Long id, @RequestBody EventoDto updatedData) {
+        try {
+            EventoDto updatedEvent = eventoService.editEvent(id, updatedData);
+            return ResponseEntity.ok(updatedEvent);
+        } catch (IllegalArgumentException e) {
+            return errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return errorResponse("Unexpected error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
