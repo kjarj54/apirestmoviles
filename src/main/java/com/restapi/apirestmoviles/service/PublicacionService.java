@@ -9,7 +9,9 @@ import com.restapi.apirestmoviles.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,9 +24,7 @@ public class PublicacionService {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private ComentarioPublicacionRepository comentarioRepository;
-
-    // Convert entity to DTO
+    private ComentarioPublicacionRepository comentarioRepository;    // Convert entity to DTO
     private PublicacionDto convertToDto(Publicacion publicacion) {
         return new PublicacionDto(
                 publicacion.getId(),
@@ -33,6 +33,19 @@ public class PublicacionService {
                 publicacion.getContenido(),
                 publicacion.getFecha()
         );
+    }
+
+    // Convert entity to response Map with user information
+    private Map<String, Object> convertToResponseMap(Publicacion publicacion) {
+        Map<String, Object> responseMap = new HashMap<>();
+        responseMap.put("id", publicacion.getId());
+        responseMap.put("usuarioId", publicacion.getUsuario().getId());
+        responseMap.put("nombreUsuario", publicacion.getUsuario().getNombre());
+        responseMap.put("tema", publicacion.getTema());
+        responseMap.put("contenido", publicacion.getContenido());
+        responseMap.put("fecha", publicacion.getFecha());
+        responseMap.put("categoria", "General"); // Categoria por defecto por ahora
+        return responseMap;
     }
 
     // Convert DTO to entity
@@ -52,20 +65,18 @@ public class PublicacionService {
         Publicacion publicacion = convertToEntity(publicacionDto, usuario);
         Publicacion savedPublicacion = publicacionRepository.save(publicacion);
         return convertToDto(savedPublicacion);
-    }
-
-    // Retrieve all publications
-    public List<PublicacionDto> getAllPublicaciones() {
+    }    // Retrieve all publications
+    public List<Map<String, Object>> getAllPublicaciones() {
         return publicacionRepository.findAll().stream()
-                .map(this::convertToDto)
+                .map(this::convertToResponseMap)
                 .collect(Collectors.toList());
     }
 
     // Retrieve a publication by ID
-    public PublicacionDto getPublicacionById(Long id) {
+    public Map<String, Object> getPublicacionById(Long id) {
         Publicacion publicacion = publicacionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + id));
-        return convertToDto(publicacion);
+        return convertToResponseMap(publicacion);
     }
 
     // Delete a publication by ID

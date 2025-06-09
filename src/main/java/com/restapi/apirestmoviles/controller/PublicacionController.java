@@ -36,13 +36,11 @@ public class PublicacionController {
         } catch (Exception e) {
             return errorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
-
-    @Operation(summary = "Retrieve all posts")
+    }    @Operation(summary = "Retrieve all posts")
     @GetMapping
     public ResponseEntity<?> getAllPublicaciones() {
         try {
-            List<PublicacionDto> publicaciones = publicacionService.getAllPublicaciones();
+            List<Map<String, Object>> publicaciones = publicacionService.getAllPublicaciones();
             return ResponseEntity.ok(publicaciones);
         } catch (Exception e) {
             return errorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -53,7 +51,7 @@ public class PublicacionController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getPublicacionById(@PathVariable Long id) {
         try {
-            PublicacionDto publicacion = publicacionService.getPublicacionById(id);
+            Map<String, Object> publicacion = publicacionService.getPublicacionById(id);
             return ResponseEntity.ok(publicacion);
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
