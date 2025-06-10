@@ -22,16 +22,16 @@ public class EstacionCargaController {
     private EstacionCargaService estacionCargaService;
 
     @Autowired
-    private IConvierteDatos convierteDatos;
-
-    @Operation(summary = "Retrieve all charging stations")
+    private IConvierteDatos convierteDatos;    @Operation(summary = "Retrieve all charging stations")
     @GetMapping
     public ResponseEntity<?> getAllStations() {
         try {
             List<EstacionCargaDto> stations = estacionCargaService.getAllStations();
             return ResponseEntity.ok(stations);
         } catch (Exception e) {
-            return errorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+            System.err.println("Error in getAllStations: " + e.getMessage());
+            e.printStackTrace();
+            return errorResponse("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

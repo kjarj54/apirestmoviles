@@ -6,5 +6,7 @@ public record CalificacionEstacionDto(Long id,
                                       Long usuarioId,
                                       Long estacionId,
                                       Integer calificacion,
-                                      LocalDateTime fecha) {
+                                      String comentario,
+                                      LocalDateTime fecha,
+                                      String nombreUsuario) {
 }

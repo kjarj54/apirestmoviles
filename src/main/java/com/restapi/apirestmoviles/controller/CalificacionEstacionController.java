@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/ratings")
+@RequestMapping("/api/calificaciones-estaciones")
 @CrossOrigin(origins = "*")
 public class CalificacionEstacionController {
 
@@ -22,9 +22,7 @@ public class CalificacionEstacionController {
     private CalificacionEstacionService calificacionEstacionService;
 
     @Autowired
-    private IConvierteDatos convierteDatos;
-
-    @Operation(summary = "Add a new rating for a charging station")
+    private IConvierteDatos convierteDatos;    @Operation(summary = "Add a new rating for a charging station")
     @PostMapping
     public ResponseEntity<?> addCalificacion(@RequestBody String ratingJson) {
         try {
@@ -34,15 +32,16 @@ public class CalificacionEstacionController {
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return errorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+            return errorResponse("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
-
-    @Operation(summary = "Get ratings for a specific charging station")
-    @GetMapping("/station/{id}")
-    public ResponseEntity<?> getCalificacionesByEstacion(@PathVariable Long id) {
+    }    @Operation(summary = "Get ratings for a specific charging station")
+    @GetMapping("/estacion/{id}")
+    public ResponseEntity<?> getCalificacionesByEstacion(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         try {
-            List<CalificacionEstacionDto> calificaciones = calificacionEstacionService.getCalificacionesByEstacion(id);
+            List<CalificacionEstacionDto> calificaciones = calificacionEstacionService.getCalificacionesByEstacion(id, page, size);
             return ResponseEntity.ok(calificaciones);
         } catch (Exception e) {
             return errorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);

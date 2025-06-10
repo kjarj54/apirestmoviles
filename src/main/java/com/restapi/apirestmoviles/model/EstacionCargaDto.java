@@ -12,5 +12,7 @@ public record EstacionCargaDto(
         Integer potencia,
         Double tarifa,
         Boolean disponibilidad,
-        String horario) {
+        String horario,
+        Double calificacion,
+        Integer cantidadResenas) {
 }
