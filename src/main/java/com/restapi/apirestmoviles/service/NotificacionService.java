@@ -54,6 +54,21 @@ public class NotificacionService {
         return convertToDto(savedNotificacion);
     }
 
+    // Create notifications for all users (for new stations announcements)
+    public void createBroadcastNotification(String mensaje, String tipo) {
+        List<Usuario> allUsers = usuarioRepository.findAll();
+        
+        for (Usuario usuario : allUsers) {
+            Notificacion notificacion = new Notificacion();
+            notificacion.setUsuario(usuario);
+            notificacion.setMensaje(mensaje);
+            notificacion.setTipo(tipo);
+            notificacion.setLeido(false);
+            
+            notificacionRepository.save(notificacion);
+        }
+    }
+
     // Get notifications by user
     public List<NotificacionDto> getNotificationsByUser(Long usuarioId) {
         if (!usuarioRepository.existsById(usuarioId)) {

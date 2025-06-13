@@ -34,6 +34,31 @@ public class NotificacionController {
         } catch (Exception e) {
             return errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
+    }    @Operation(summary = "Send broadcast notification to all users")
+    @PostMapping("/broadcast")
+    public ResponseEntity<?> sendBroadcastNotification(@RequestBody String notificationJson) {
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, String> request = convierteDatos.obtenerDatos(notificationJson, Map.class);
+            String mensaje = request.get("mensaje");
+            String tipo = request.get("tipo");
+            
+            if (mensaje == null || mensaje.trim().isEmpty()) {
+                return errorResponse("Mensaje is required", HttpStatus.BAD_REQUEST);
+            }
+            
+            if (tipo == null || tipo.trim().isEmpty()) {
+                tipo = "GENERAL";
+            }
+            
+            notificacionService.createBroadcastNotification(mensaje, tipo);
+            
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Broadcast notification sent successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @Operation(summary = "Get notifications by user ID")

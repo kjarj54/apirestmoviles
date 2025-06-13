@@ -18,7 +18,12 @@ public class EstacionCargaService {
     private EstacionCargaRepository estacionCargaRepository;
 
     @Autowired
-    private CalificacionEstacionRepository calificacionEstacionRepository;    // Convert entity to DTO
+    private CalificacionEstacionRepository calificacionEstacionRepository;
+    
+    @Autowired
+    private NotificacionService notificacionService;
+
+    // Convert entity to DTO
     private EstacionCargaDto convertToDto(EstacionCarga estacion) {
         double calificacionPromedio = 0.0;
         int cantidadResenas = 0;
@@ -95,6 +100,23 @@ public class EstacionCargaService {
         }
         EstacionCarga estacion = convertToEntity(estacionDto);
         EstacionCarga savedStation = estacionCargaRepository.save(estacion);
+        
+        // Enviar notificación a todos los usuarios sobre la nueva estación
+        String mensaje = String.format("¡Nueva estación de carga disponible! %s en %s. " +
+                "Tipo: %s, Potencia: %d kW, Tarifa: $%.2f/kWh", 
+                savedStation.getNombre(), 
+                savedStation.getDireccion(),
+                savedStation.getTipoCargador(),
+                savedStation.getPotencia(),
+                savedStation.getTarifa() != null ? savedStation.getTarifa().doubleValue() : 0.0);
+        
+        try {
+            notificacionService.createBroadcastNotification(mensaje, "NUEVA_ESTACION");
+        } catch (Exception e) {
+            System.err.println("Error enviando notificaciones de nueva estación: " + e.getMessage());
+            // No lanzamos la excepción para no afectar la creación de la estación
+        }
+        
         return convertToDto(savedStation);
     }
 
