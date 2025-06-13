@@ -20,31 +20,29 @@ public class EstacionCargaService {
     @Autowired
     private CalificacionEstacionRepository calificacionEstacionRepository;    // Convert entity to DTO
     private EstacionCargaDto convertToDto(EstacionCarga estacion) {
-        // Usar consulta optimizada para obtener solo estadísticas sin cargar entidades completas
         double calificacionPromedio = 0.0;
         int cantidadResenas = 0;
-        
+
         try {
-            Object[] stats = calificacionEstacionRepository.findRatingStatsById(estacion.getId());
+            // Usar consulta directa sin relaciones complejas para obtener calificaciones
+            List<com.restapi.apirestmoviles.model.CalificacionEstacion> calificaciones = 
+                calificacionEstacionRepository.findByEstacionId(estacion.getId());
             
-            if (stats != null && stats.length >= 2) {
-                // AVG puede ser null si no hay calificaciones
-                if (stats[0] != null) {
-                    calificacionPromedio = ((Number) stats[0]).doubleValue();
+            if (!calificaciones.isEmpty()) {
+                // Calcular promedio manualmente
+                double suma = 0.0;
+                for (com.restapi.apirestmoviles.model.CalificacionEstacion cal : calificaciones) {
+                    suma += cal.getCalificacion();
                 }
-                // COUNT siempre devuelve un número, pero podría ser 0
-                if (stats[1] != null) {
-                    cantidadResenas = ((Number) stats[1]).intValue();
-                }
+                calificacionPromedio = suma / calificaciones.size();
+                cantidadResenas = calificaciones.size();
             }
             
-            // Debug: logging temporal para verificar cálculos
-            System.out.println("Estación " + estacion.getNombre() + " (ID: " + estacion.getId() + 
-                             ") - Calificación: " + calificacionPromedio + ", Cantidad: " + cantidadResenas);
+            // Log para debug (puedes comentar después)
+            System.out.println("Estación: " + estacion.getNombre() + " - Rating: " + calificacionPromedio + " - Count: " + cantidadResenas);
             
         } catch (Exception e) {
-            // Si hay error en la consulta, usar valores por defecto
-            System.err.println("Error obteniendo estadísticas para estación " + estacion.getId() + ": " + e.getMessage());
+            System.err.println("Error calculando estadísticas para estación " + estacion.getId() + ": " + e.getMessage());
             calificacionPromedio = 0.0;
             cantidadResenas = 0;
         }

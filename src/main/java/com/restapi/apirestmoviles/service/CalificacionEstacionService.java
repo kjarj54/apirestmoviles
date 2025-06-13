@@ -73,4 +73,10 @@ public class CalificacionEstacionService {
                 .orElseThrow(() -> new IllegalArgumentException("Rating not found with id: " + id));
         calificacionEstacionRepository.delete(calificacion);
     }
+
+    // Método temporal para debug - obtener todas las calificaciones
+    public List<CalificacionEstacionDto> getAllCalificaciones() {
+        List<CalificacionEstacion> todasLasCalificaciones = calificacionEstacionRepository.findAll();
+        return todasLasCalificaciones.stream().map(this::convertToDto).collect(Collectors.toList());
+    }
 }

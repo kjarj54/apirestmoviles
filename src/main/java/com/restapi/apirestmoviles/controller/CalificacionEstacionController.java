@@ -61,6 +61,18 @@ public class CalificacionEstacionController {
         }
     }
 
+    // Endpoint temporal para debug - ver todas las calificaciones
+    @Operation(summary = "DEBUG: Get all ratings")
+    @GetMapping("/debug/all")
+    public ResponseEntity<?> getAllCalificaciones() {
+        try {
+            List<CalificacionEstacionDto> calificaciones = calificacionEstacionService.getAllCalificaciones();
+            return ResponseEntity.ok(calificaciones);
+        } catch (Exception e) {
+            return errorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     private ResponseEntity<Map<String, String>> errorResponse(String message, HttpStatus status) {
         Map<String, String> response = new HashMap<>();
         response.put("error", message);
