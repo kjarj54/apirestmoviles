@@ -144,4 +144,29 @@ public class EstacionCargaService {
 
         estacionCargaRepository.delete(estacion);
     }
+
+    public EstacionCargaDto updateStationAvailability(Long id, Boolean availability) {
+        EstacionCarga estacion = estacionCargaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Charging station not found with id: " + id));
+
+        Boolean previousAvailability = estacion.getDisponibilidad();
+        estacion.setDisponibilidad(availability);
+
+        EstacionCarga updatedStation = estacionCargaRepository.save(estacion);
+        
+        // Enviar notificación sobre el cambio de disponibilidad
+        if (previousAvailability != null && !previousAvailability.equals(availability)) {
+            String mensaje = String.format("La estación %s %s", 
+                estacion.getNombre(), 
+                availability ? "ahora está disponible" : "ha sido ocupada");
+            
+            try {
+                notificacionService.createBroadcastNotification(mensaje, "CAMBIO_DISPONIBILIDAD");
+            } catch (Exception e) {
+                System.err.println("Error enviando notificaciones de cambio de disponibilidad: " + e.getMessage());
+            }
+        }
+
+        return convertToDto(updatedStation);
+    }
 }

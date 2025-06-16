@@ -60,14 +60,31 @@ public class EstacionCargaController {
         } catch (Exception e) {
             return errorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
-
-    @Operation(summary = "Update a charging station")
+    }    @Operation(summary = "Update a charging station")
     @PutMapping("/{id}")
     public ResponseEntity<?> updateStation(@PathVariable Long id, @RequestBody String stationJson) {
         try {
             EstacionCargaDto stationDto = convierteDatos.obtenerDatos(stationJson, EstacionCargaDto.class);
             EstacionCargaDto updatedStation = estacionCargaService.updateStation(id, stationDto);
+            return ResponseEntity.ok(updatedStation);
+        } catch (IllegalArgumentException e) {
+            return errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return errorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }    @Operation(summary = "Update charging station availability")
+    @PutMapping("/{id}/availability")
+    public ResponseEntity<?> updateStationAvailability(@PathVariable Long id, @RequestBody String availabilityJson) {
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> availabilityData = convierteDatos.obtenerDatos(availabilityJson, Map.class);
+            Boolean availability = (Boolean) availabilityData.get("disponibilidad");
+            
+            if (availability == null) {
+                return errorResponse("Missing 'disponibilidad' field", HttpStatus.BAD_REQUEST);
+            }
+            
+            EstacionCargaDto updatedStation = estacionCargaService.updateStationAvailability(id, availability);
             return ResponseEntity.ok(updatedStation);
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
